@@ -16,8 +16,21 @@ VALUES ('Minh','Deleon','md@123.com','555 555 5555','123 Wabie Street'),
 ('Arline','Reese', 'ar@gmail.com', '333 333 3333', '123 Fever St'),
 ('Ronny','Cruz', 'rc@gmail.com', '444 444 4444', '215 Nanana St');
 
-SELECT * FROM customer;
 
+CREATE OR REPLACE PROCEDURE add_customer(first_name VARCHAR, last_name VARCHAR, email VARCHAR, phone VARCHAR, address VARCHAR)
+LANGUAGE plpgsql
+AS $$
+BEGIN 
+	INSERT INTO customer (first_name, last_name, email, phone, address)
+	VALUES (first_name, last_name, email, phone, address);
+END;
+$$;
+
+CALL add_customer('Emilia', 'Cooke', 'ec@gmail.com', '773 111 1111', '124 Sunshine Way');
+
+CALL add_customer('Leon','Rojas','lr@gmail.com', '773 222 2222', '492 Away Rd');
+
+SELECT * FROM customer;
 
 
 -- car
@@ -160,6 +173,7 @@ VALUES (1, 'Hobert', 'Carter', 'sales', 'director', 'hc@gmail.com', '234 111 111
 SELECT * FROM employee;
 
 
+
 -- service_ticket
 CREATE TABLE service_ticket(
 	service_ticket_id SERIAL PRIMARY KEY,
@@ -189,6 +203,7 @@ SELECT car_id, customer_id FROM invoice;
 SELECT * FROM service_ticket;
 
 
+
 -- invoice_employee
 CREATE TABLE invoice_employee(
 	employee_id INTEGER NOT NULL,
@@ -197,18 +212,21 @@ CREATE TABLE invoice_employee(
 	FOREIGN KEY (invoice_id) REFERENCES invoice(invoice_id)
 );
 
-SELECT * FROM invoice; -- there's 6
-SELECT * FROM employee; -- there's 13
+-- checking which invoices were done at which branch, and which employees work in sales at that branch
+SELECT * FROM invoice; -- 1,2@1; 2@1; 3@2; 4@3; 5@4; 6@5
+SELECT * FROM employee WHERE job = 'sales'; -- 1@1; 4@2; 6@3; 8,9@4; 11@5
+
 
 INSERT INTO invoice_employee (invoice_id, employee_id)
-VALUES (1,13),
-(2,12),
-(3,1),
-(4,4),
-(5,5),
-(6,7);
+VALUES (1,1),
+(2,1),
+(3,4),
+(4,6),
+(5,8),
+(6,11);
 
 SELECT * FROM invoice_employee;
+
 
 
 -- service_ticket_employee
@@ -219,20 +237,18 @@ CREATE TABLE service_ticket_employee(
 	FOREIGN KEY (service_ticket_id) REFERENCES service_ticket(service_ticket_id)
 );
 
-SELECT * FROM service_ticket; -- there's 5
-SELECT * FROM employee; -- there's 13
+-- checking what service was done at what branch, and what employees work as mechanics at that branch:
+SELECT * FROM service_ticket; -- 1@1, 2@2, 3@4, 4@5, 5@3
+SELECT * FROM employee WHERE job = 'mechanic'; -- 2,3@1; 5@2; 7@3; 10@4; 12,13@5
 
--- oh shoot do i have to make sure that the service is done by employees at the same branch as listed on the ticket :((
--- and same with invoices?
 INSERT INTO service_ticket_employee (service_ticket_id, employee_id)
-VALUES (1,1),
-(2,13),
-(3,12),
-(4,11),
-(5,10),
-(1,9),
-(2,8),
-(3,7);
+VALUES (1,2),
+(1,3),
+(2,5),
+(3,10),
+(4,12),
+(4,13),
+(5,7);
 
 SELECT * FROM service_ticket_employee;
 
